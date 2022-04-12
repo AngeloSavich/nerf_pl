@@ -1,4 +1,6 @@
 import os
+from sklearnex import patch_sklearn
+patch_sklearn()
 
 from pytorch_lightning.accelerators import accelerator
 from opt import get_opts
