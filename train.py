@@ -189,7 +189,6 @@ def main(hparams):
 
     trainer = Trainer(max_epochs=hparams.num_epochs,
                       callbacks=callbacks,
-                      resume_from_checkpoint=hparams.ckpt_path,
                       logger=logger,
                       enable_model_summary=False,
                       accelerator='auto',
@@ -200,7 +199,10 @@ def main(hparams):
                       strategy=DDPPlugin(find_unused_parameters=False) if hparams.num_gpus > 1 else None,
                       pin_memory=True)
 
-    trainer.fit(system)
+    if (hparams.ckpt_path is not None):
+        trainer.fit(system, ckpt_path="hparams.ckpt_path")
+    else:
+        trainer.fit(system)
 
 
 if __name__ == '__main__':
