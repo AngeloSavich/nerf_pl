@@ -171,8 +171,8 @@ def main(hparams):
                                               every_n_epochs=1,
                                               save_last=True)
 
-    cb_ckpt_all_every_epoch.CHECKPOINT_NAME_LAST="last-{epoch:0>3d}"
-    cb_ckpt_all.CHECKPOINT_NAME_LAST="last-end-epoch-{epoch:0>3d}"
+    cb_ckpt_all_every_epoch.CHECKPOINT_NAME_LAST = "last-{epoch:0>3d}"
+    cb_ckpt_all.CHECKPOINT_NAME_LAST = "last-end-epoch-{epoch:0>3d}"
 
     cb_ckpt_latest = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/latest',
                                      filename='latest-{epoch:d}',
@@ -197,8 +197,7 @@ def main(hparams):
                       num_sanity_val_steps=1,
                       benchmark=True,
                       profiler="simple" if hparams.num_gpus == 1 else None,
-                      strategy=DDPPlugin(find_unused_parameters=False) if hparams.num_gpus > 1 else None,
-                      pin_memory=True)
+                      strategy=DDPPlugin(find_unused_parameters=False) if hparams.num_gpus > 1 else None)
 
     if (hparams.ckpt_path is not None):
         trainer.fit(system, ckpt_path="hparams.ckpt_path")
