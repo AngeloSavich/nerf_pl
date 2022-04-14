@@ -1,7 +1,8 @@
-import os
 from sklearnex import patch_sklearn
+
 patch_sklearn()
 
+import os
 from pytorch_lightning.accelerators import accelerator
 from opt import get_opts
 import torch
@@ -42,14 +43,14 @@ class NeRFSystem(LightningModule):
         self.embeddings = {'xyz': self.embedding_xyz,
                            'dir': self.embedding_dir}
 
-        self.nerf_coarse = NeRF(in_channels_xyz=6*hparams.N_emb_xyz+3,
-                                in_channels_dir=6*hparams.N_emb_dir+3)
+        self.nerf_coarse = NeRF(in_channels_xyz=6 * hparams.N_emb_xyz + 3,
+                                in_channels_dir=6 * hparams.N_emb_dir + 3)
         self.models = {'coarse': self.nerf_coarse}
         load_ckpt(self.nerf_coarse, hparams.weight_path, 'nerf_coarse')
 
         if hparams.N_importance > 0:
-            self.nerf_fine = NeRF(in_channels_xyz=6*hparams.N_emb_xyz+3,
-                                  in_channels_dir=6*hparams.N_emb_dir+3)
+            self.nerf_fine = NeRF(in_channels_xyz=6 * hparams.N_emb_xyz + 3,
+                                  in_channels_dir=6 * hparams.N_emb_dir + 3)
             self.models['fine'] = self.nerf_fine
             load_ckpt(self.nerf_fine, hparams.weight_path, 'nerf_fine')
 
@@ -61,13 +62,13 @@ class NeRFSystem(LightningModule):
             rendered_ray_chunks = \
                 render_rays(self.models,
                             self.embeddings,
-                            rays[i:i+self.hparams.chunk],
+                            rays[i:i + self.hparams.chunk],
                             self.hparams.N_samples,
                             self.hparams.use_disp,
                             self.hparams.perturb,
                             self.hparams.noise_std,
                             self.hparams.N_importance,
-                            self.hparams.chunk, # chunk size is effective in val mode
+                            self.hparams.chunk,  # chunk size is effective in val mode
                             self.train_dataset.white_back)
 
             for k, v in rendered_ray_chunks.items():
@@ -103,9 +104,9 @@ class NeRFSystem(LightningModule):
         return DataLoader(self.val_dataset,
                           shuffle=False,
                           num_workers=4,
-                          batch_size=1, # validate one image (H*W rays) at a time
+                          batch_size=1,  # validate one image (H*W rays) at a time
                           pin_memory=True)
-    
+
     def training_step(self, batch, batch_nb):
         rays, rgbs = batch['rays'], batch['rgbs']
         results = self(rays)
@@ -123,20 +124,20 @@ class NeRFSystem(LightningModule):
 
     def validation_step(self, batch, batch_nb):
         rays, rgbs = batch['rays'], batch['rgbs']
-        rays = rays.squeeze() # (H*W, 3)
-        rgbs = rgbs.squeeze() # (H*W, 3)
+        rays = rays.squeeze()  # (H*W, 3)
+        rgbs = rgbs.squeeze()  # (H*W, 3)
         results = self(rays)
         log = {'val_loss': self.loss(results, rgbs)}
         typ = 'fine' if 'rgb_fine' in results else 'coarse'
-    
+
         if batch_nb == 0:
             W, H = self.hparams.img_wh
-            img = results[f'rgb_{typ}'].view(H, W, 3).permute(2, 0, 1).cpu() # (3, H, W)
-            img_gt = rgbs.view(H, W, 3).permute(2, 0, 1).cpu() # (3, H, W)
-            depth = visualize_depth(results[f'depth_{typ}'].view(H, W)) # (3, H, W)
-            stack = torch.stack([img_gt, img, depth]) # (3, 3, H, W)
+            img = results[f'rgb_{typ}'].view(H, W, 3).permute(2, 0, 1).cpu()  # (3, H, W)
+            img_gt = rgbs.view(H, W, 3).permute(2, 0, 1).cpu()  # (3, H, W)
+            depth = visualize_depth(results[f'depth_{typ}'].view(H, W))  # (3, H, W)
+            stack = torch.stack([img_gt, img, depth])  # (3, 3, H, W)
             self.logger.experiment.add_images('val/GT_pred_depth',
-                                               stack, self.global_step)
+                                              stack, self.global_step)
 
         psnr_ = psnr(results[f'rgb_{typ}'], rgbs)
         log['val_psnr'] = psnr_
@@ -153,13 +154,34 @@ class NeRFSystem(LightningModule):
 
 def main(hparams):
     system = NeRFSystem(hparams)
-    ckpt_cb = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}',
-                              filename='{epoch:d}',
-                              monitor='val/psnr',
-                              mode='max',
-                              save_top_k=5)
+    cb_ckpt_top = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/top',
+                                  filename='top-{epoch:0>3d}',
+                                  monitor='val/psnr',
+                                  mode='max',
+                                  save_top_k=50)
+
+    cb_ckpt_all = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/all',
+                                  filename='all-{epoch:0>3d}-{step:d}',
+                                  save_top_k=-1,
+                                  CHECKPOINT_NAME_LAST="last-{epoch:0>3d}",
+                                  save_last=True)
+
+    cb_ckpt_all_every_epoch = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/all-end-epoch',
+                                              filename='all-{epoch:0>3d}-{step:d}',
+                                              save_top_k=-1,
+                                              CHECKPOINT_NAME_LAST="last-{epoch:0>3d}",
+                                              every_n_epochs=1,
+                                              save_last=True)
+
+    cb_ckpt_latest = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/latest',
+                                     filename='latest-{epoch:d}',
+                                     monitor='val/psnr',
+                                     mode='max',
+                                     every_n_epochs=1,
+                                     save_top_k=1)
+
     pbar = TQDMProgressBar(refresh_rate=1)
-    callbacks = [ckpt_cb, pbar]
+    callbacks = [cb_ckpt_top, cb_ckpt_all, cb_ckpt_latest, cb_ckpt_all_every_epoch, pbar]
 
     logger = TensorBoardLogger(save_dir="logs",
                                name=hparams.exp_name,
@@ -174,8 +196,9 @@ def main(hparams):
                       devices=hparams.num_gpus,
                       num_sanity_val_steps=1,
                       benchmark=True,
-                      profiler="simple" if hparams.num_gpus==1 else None,
-                      strategy=DDPPlugin(find_unused_parameters=False) if hparams.num_gpus>1 else None)
+                      profiler="simple" if hparams.num_gpus == 1 else None,
+                      strategy=DDPPlugin(find_unused_parameters=False) if hparams.num_gpus > 1 else None,
+                      pin_memory=True)
 
     trainer.fit(system)
 
