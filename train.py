@@ -163,15 +163,16 @@ def main(hparams):
     cb_ckpt_all = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/all',
                                   filename='all-{epoch:0>3d}-{step:d}',
                                   save_top_k=-1,
-                                  checkpoint_name_last="last-{epoch:0>3d}",
                                   save_last=True)
 
     cb_ckpt_all_every_epoch = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/all-end-epoch',
                                               filename='all-{epoch:0>3d}-{step:d}',
                                               save_top_k=-1,
-                                              checkpoint_name_last="last-{epoch:0>3d}",
                                               every_n_epochs=1,
                                               save_last=True)
+
+    cb_ckpt_all_every_epoch.CHECKPOINT_NAME_LAST="last-{epoch:0>3d}"
+    cb_ckpt_all.CHECKPOINT_NAME_LAST="last-end-epoch-{epoch:0>3d}"
 
     cb_ckpt_latest = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/latest',
                                      filename='latest-{epoch:d}',
