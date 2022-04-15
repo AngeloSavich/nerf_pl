@@ -162,8 +162,7 @@ def main(hparams):
 
     cb_ckpt_all = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/all',
                                   filename='all-{epoch:0>3d}-{step:d}',
-                                  save_top_k=-1,
-                                  save_last=True)
+                                  save_top_k=-1)
 
     cb_ckpt_all_every_epoch = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/all-end-epoch',
                                               filename='all-{epoch:0>3d}-{step:d}',
@@ -200,7 +199,7 @@ def main(hparams):
                       strategy=DDPPlugin(find_unused_parameters=False) if hparams.num_gpus > 1 else None)
 
     if (hparams.ckpt_path is not None):
-        trainer.fit(system, ckpt_path="hparams.ckpt_path")
+        trainer.fit(system, ckpt_path=hparams.ckpt_path)
     else:
         trainer.fit(system)
 
