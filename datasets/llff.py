@@ -252,7 +252,8 @@ class LLFFDataset(Dataset):
                 # assert img.size[1]*self.img_wh[0] == img.size[0]*self.img_wh[1], \
                 #     f'''{image_path} has different aspect ratio than img_wh, 
                 #         please check your data!'''
-                img = img.resize(self.img_wh, Image.Resampling.LANCZOS)
+                img = img.resize(self.img_wh, Image.LANCZOS)
+                # img = img.resize(self.img_wh, Image.Resampling.LANCZOS)
                 img = self.transform(img) # (3, h, w)
                 img = img.view(3, -1).permute(1, 0) # (h*w, 3) RGB
                 self.all_rgbs += [img]
@@ -340,7 +341,8 @@ class LLFFDataset(Dataset):
                 if self.split == 'val':
                     idx = self.val_idx
                 img = Image.open(self.image_paths[idx]).convert('RGB')
-                img = img.resize(self.img_wh, Image.Resampling.LANCZOS)
+                img = img.resize(self.img_wh, Image.LANCZOS)
+                # img = img.resize(self.img_wh, Image.Resampling.LANCZOS)
                 img = self.transform(img) # (3, h, w)
                 img = img.view(3, -1).permute(1, 0) # (h*w, 3)
                 sample['rgbs'] = img
