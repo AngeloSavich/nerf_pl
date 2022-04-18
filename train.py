@@ -152,36 +152,39 @@ class NeRFSystem(LightningModule):
         self.log('val/psnr', mean_psnr, prog_bar=True)
 
 
+# TODO: Make it save checkpoints in the data repo
 def main(hparams):
     system = NeRFSystem(hparams)
-    cb_ckpt_top = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/top',
-                                  filename='top-{epoch:0>3d}',
+    cb_ckpt_top = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/top5/',
+                                  filename='top5-{epoch:0>3d}',
                                   monitor='val/psnr',
                                   mode='max',
-                                  save_top_k=50)
+                                  save_top_k=6,
+                                  save_last=True)
 
-    cb_ckpt_all = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/all',
-                                  filename='all-{epoch:0>3d}-{step:d}',
-                                  save_top_k=-1)
+    cb_every_epoch = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/all_epochs',
+                                     filename='all-{epoch:0>3d}-{step:d}',
+                                     save_top_k=-1,
+                                     every_n_epochs=1)
 
-    cb_ckpt_all_every_epoch = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/all-end-epoch',
-                                              filename='all-{epoch:0>3d}-{step:d}',
-                                              save_top_k=-1,
-                                              every_n_epochs=1,
-                                              save_last=True)
+    # cb_every_epoch.CHECKPOINT_NAME_LAST = "last-{epoch:0>3d}"
 
-    cb_ckpt_all_every_epoch.CHECKPOINT_NAME_LAST = "last-{epoch:0>3d}"
-    cb_ckpt_all.CHECKPOINT_NAME_LAST = "last-end-epoch-{epoch:0>3d}"
+    cb_ckpt_min_loss = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
+                                       filename='top_min_loss-{epoch:d}',
+                                       monitor='val_loss',
+                                       mode='min',
+                                       every_n_epochs=1,
+                                       save_top_k=1)
 
-    cb_ckpt_latest = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/latest',
-                                     filename='latest-{epoch:d}',
-                                     monitor='val/psnr',
-                                     mode='max',
-                                     every_n_epochs=1,
-                                     save_top_k=1)
+    cb_ckpt_max_psnr = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
+                                       filename='top_max_psnr-{epoch:d}',
+                                       monitor='val/psnr',
+                                       mode='max',
+                                       every_n_epochs=1,
+                                       save_top_k=1)
 
     pbar = TQDMProgressBar(refresh_rate=1)
-    callbacks = [cb_ckpt_top, cb_ckpt_all, cb_ckpt_latest, cb_ckpt_all_every_epoch, pbar]
+    callbacks = [cb_ckpt_top, cb_ckpt_min_loss, cb_ckpt_max_psnr, cb_every_epoch, pbar]
 
     logger = TensorBoardLogger(save_dir="logs",
                                name=hparams.exp_name,
