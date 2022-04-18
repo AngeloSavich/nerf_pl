@@ -157,24 +157,24 @@ def main(hparams):
     system = NeRFSystem(hparams)
     cb_ckpt_top = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/top5/',
                                   filename='top5-{epoch:0>3d}',
-                                  monitor='val/psnr',
-                                  mode='max',
+                                  every_n_epochs=1,
                                   save_top_k=6,
-                                  save_last=True)
+                                  monitor='val/psnr',
+                                  mode='max')
 
     cb_every_epoch = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/all_epochs',
                                      filename='all-{epoch:0>3d}-{step:d}',
-                                     save_top_k=-1,
-                                     every_n_epochs=1)
+                                     every_n_epochs=1,
+                                     save_top_k=-1)
 
     # cb_every_epoch.CHECKPOINT_NAME_LAST = "last-{epoch:0>3d}"
 
     cb_ckpt_min_loss = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
                                        filename='top_min_loss-{epoch:d}',
-                                       monitor='val_loss',
-                                       mode='min',
                                        every_n_epochs=1,
-                                       save_top_k=1)
+                                       save_top_k=1,
+                                       monitor='val_loss',
+                                       mode='min')
 
     cb_ckpt_max_psnr = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
                                        filename='top_max_psnr-{epoch:d}',
