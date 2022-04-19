@@ -167,29 +167,29 @@ def main(hparams):
                                      every_n_epochs=1,
                                      save_top_k=-1)
 
-    cb_ckpt_min_loss = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
-                                       filename='top_min_loss-{epoch:d}',
-                                       every_n_epochs=1,
-                                       save_top_k=1,
-                                       monitor='val_loss',
-                                       mode='min')
+    cb_ckpt_min_loss_train = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
+                                             filename='top_min_loss_train-{epoch:d}',
+                                             every_n_epochs=1,
+                                             save_top_k=1,
+                                             monitor='train/loss',
+                                             mode='min')
 
-    cb_ckpt_max_psnr = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
-                                       filename='top_max_psnr-{epoch:d}',
-                                       every_n_epochs=1,
-                                       save_top_k=1,
-                                       monitor='val_psnr',
-                                       mode='max')
-
-    cb_ckpt_min_mean_loss = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
-                                            filename='top_min_mean_loss-{epoch:d}',
+    cb_ckpt_min_loss_mean = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
+                                            filename='top_min_loss_mean-{epoch:d}',
                                             every_n_epochs=1,
                                             save_top_k=1,
                                             monitor='val/loss',
                                             mode='min')
 
-    cb_ckpt_max_mean_psnr = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
-                                            filename='top_max_mean_psnr-{epoch:d}',
+    cb_ckpt_max_psnr_train = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
+                                             filename='top_max_psnr_train-{epoch:d}',
+                                             every_n_epochs=1,
+                                             save_top_k=1,
+                                             monitor='train/psnr',
+                                             mode='max')
+
+    cb_ckpt_max_psnr_mean = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
+                                            filename='top_max_psnr_mean-{epoch:d}',
                                             every_n_epochs=1,
                                             save_top_k=1,
                                             monitor='val/psnr',
@@ -197,8 +197,8 @@ def main(hparams):
 
     pbar = TQDMProgressBar(refresh_rate=1)
     callbacks = [cb_ckpt_top, cb_every_epoch,
-                 cb_ckpt_min_loss, cb_ckpt_max_psnr,
-                 cb_ckpt_min_mean_loss, cb_ckpt_max_mean_psnr,
+                 cb_ckpt_min_loss_mean, cb_ckpt_max_psnr_mean,
+                 cb_ckpt_min_loss_train, cb_ckpt_max_psnr_train,
                  pbar]
 
     logger = TensorBoardLogger(save_dir="logs",
