@@ -167,8 +167,6 @@ def main(hparams):
                                      every_n_epochs=1,
                                      save_top_k=-1)
 
-    # cb_every_epoch.CHECKPOINT_NAME_LAST = "last-{epoch:0>3d}"
-
     cb_ckpt_min_loss = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
                                        filename='top_min_loss-{epoch:d}',
                                        every_n_epochs=1,
@@ -178,13 +176,30 @@ def main(hparams):
 
     cb_ckpt_max_psnr = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
                                        filename='top_max_psnr-{epoch:d}',
-                                       monitor='val/psnr',
-                                       mode='max',
                                        every_n_epochs=1,
-                                       save_top_k=1)
+                                       save_top_k=1,
+                                       monitor='val_psnr',
+                                       mode='max')
+
+    cb_ckpt_min_mean_loss = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
+                                            filename='top_min_mean_loss-{epoch:d}',
+                                            every_n_epochs=1,
+                                            save_top_k=1,
+                                            monitor='val/loss',
+                                            mode='min')
+
+    cb_ckpt_max_mean_psnr = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
+                                            filename='top_max_mean_psnr-{epoch:d}',
+                                            every_n_epochs=1,
+                                            save_top_k=1,
+                                            monitor='val/psnr',
+                                            mode='max')
 
     pbar = TQDMProgressBar(refresh_rate=1)
-    callbacks = [cb_ckpt_top, cb_ckpt_min_loss, cb_ckpt_max_psnr, cb_every_epoch, pbar]
+    callbacks = [cb_ckpt_top, cb_every_epoch,
+                 cb_ckpt_min_loss, cb_ckpt_max_psnr,
+                 cb_ckpt_min_mean_loss, cb_ckpt_max_mean_psnr,
+                 pbar]
 
     logger = TensorBoardLogger(save_dir="logs",
                                name=hparams.exp_name,
