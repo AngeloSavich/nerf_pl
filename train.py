@@ -89,7 +89,7 @@ class NeRFSystem(LightningModule):
         self.val_dataset = dataset(split='val', **kwargs)
 
     def configure_optimizers(self):
-        self.optimizer = get_optimizer(self.hparams, self.models, self)
+        self.optimizer = get_optimizer(self.hparams, self.models)
         scheduler = get_scheduler(self.hparams, self.optimizer)
         return [self.optimizer], [scheduler]
 
