@@ -163,7 +163,7 @@ def set_lr(trainer, model):
     if auto:
         # trainer.tune(model)
 
-        # model.hparams.lr = 0.0005
+        model.hparams.lr = 0.0005
         lr_finder = trainer.tuner.lr_find(model)  # Run learning rate finder
 
         fig = lr_finder.plot(suggest=True)  # Plot
