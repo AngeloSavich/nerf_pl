@@ -156,7 +156,7 @@ class NeRFSystem(LightningModule):
 def main(hparams):
     system = NeRFSystem(hparams)
     cb_ckpt_top = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/top5/',
-                                  filename='top5-{epoch:0>3d}',
+                                  filename='top5-{epoch:0>3d}-{step:d}',
                                   every_n_epochs=1,
                                   save_top_k=6,
                                   monitor='val/psnr',
@@ -165,28 +165,35 @@ def main(hparams):
     cb_every_epoch = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/all_epochs',
                                      filename='all-{epoch:0>3d}-{step:d}',
                                      every_n_epochs=1,
-                                     save_top_k=-1)
+                                     save_top_k=-1,
+                                     save_on_train_epoch_end=False)
 
-    cb_ckpt_min_loss_train = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
-                                             filename='top_min_loss_train-{epoch:d}',
-                                             every_n_epochs=1,
-                                             save_top_k=1,
-                                             monitor='train/loss',
-                                             mode='min')
+    cb_every_epoch_end = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/all_epochs',
+                                     filename='all-{epoch:0>3d}-{step:d}-end',
+                                     every_n_epochs=1,
+                                     save_top_k=-1,
+                                     save_on_train_epoch_end=True)
+
+    # cb_ckpt_min_loss_train = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
+    #                                          filename='top_min_loss_train-{epoch:d}-{step:d}',
+    #                                          every_n_epochs=1,
+    #                                          save_top_k=1,
+    #                                          monitor='train/loss',
+    #                                          mode='min')
 
     cb_ckpt_min_loss_mean = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
-                                            filename='top_min_loss_mean-{epoch:d}',
+                                            filename='top_min_loss_mean-{epoch:d}-{step:d}',
                                             every_n_epochs=1,
                                             save_top_k=1,
                                             monitor='val/loss',
                                             mode='min')
 
-    cb_ckpt_max_psnr_train = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
-                                             filename='top_max_psnr_train-{epoch:d}',
-                                             every_n_epochs=1,
-                                             save_top_k=1,
-                                             monitor='train/psnr',
-                                             mode='max')
+    # cb_ckpt_max_psnr_train = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
+    #                                          filename='top_max_psnr_train-{epoch:d}-{step:d}',
+    #                                          every_n_epochs=1,
+    #                                          save_top_k=1,
+    #                                          monitor='train/psnr',
+    #                                          mode='max')
 
     cb_ckpt_max_psnr_mean = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
                                             filename='top_max_psnr_mean-{epoch:d}',
@@ -196,9 +203,9 @@ def main(hparams):
                                             mode='max')
 
     pbar = TQDMProgressBar(refresh_rate=1)
-    callbacks = [cb_ckpt_top, cb_every_epoch,
+    callbacks = [cb_ckpt_top, cb_every_epoch, cb_every_epoch_end,
                  cb_ckpt_min_loss_mean, cb_ckpt_max_psnr_mean,
-                 cb_ckpt_min_loss_train, cb_ckpt_max_psnr_train,
+                 # cb_ckpt_min_loss_train, cb_ckpt_max_psnr_train,
                  pbar]
 
     logger = TensorBoardLogger(save_dir="logs",
@@ -214,7 +221,8 @@ def main(hparams):
                       num_sanity_val_steps=1,
                       benchmark=True,
                       profiler="simple" if hparams.num_gpus == 1 else None,
-                      strategy=DDPPlugin(find_unused_parameters=False) if hparams.num_gpus > 1 else None)
+                      strategy=DDPPlugin(find_unused_parameters=False) if hparams.num_gpus > 1 else None,
+                      )
 
     if (hparams.ckpt_path is not None):
         trainer.fit(system, ckpt_path=hparams.ckpt_path)
