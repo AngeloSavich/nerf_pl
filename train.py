@@ -157,6 +157,8 @@ def set_lr(trainer, model):
     auto = model.hparams.lr is None
 
     if auto:
+        # trainer.tune(model)
+
         # model.hparams.lr = 0.0005
         lr_finder = trainer.tuner.lr_find(model)  # Run learning rate finder
 
@@ -260,9 +262,8 @@ def main(hparams):
                       strategy=DDPPlugin(find_unused_parameters=False) if hparams.num_gpus > 1 else None,
                       )
 
-    # # Auto Find Learning Rate: tune trainer
-    # set_lr(trainer, system)
-    trainer.tune(system)
+    # Auto Find Learning Rate: tune trainer
+    set_lr(trainer, system)
 
     if (hparams.ckpt_path is not None):
         trainer.fit(system, ckpt_path=hparams.ckpt_path)
