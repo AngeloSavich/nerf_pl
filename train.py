@@ -155,7 +155,11 @@ class NeRFSystem(LightningModule):
 def set_lr(trainer, model):
     # Determine if to use auto or manually set lr
     auto = model.hparams.lr is None
-
+    print(f'''
+    
+    {model.hparams.lr}
+    
+    ''')
     if auto:
         # trainer.tune(model)
 
@@ -168,8 +172,7 @@ def set_lr(trainer, model):
 
     print(f'''
     Learning Rate : {model.hparams.lr},
-    Auto: '{auto}'
-    Manual: '{not auto}'
+    Mode: '{"auto" if auto else "Manual"}'
     ''', flush=True)
 
 
