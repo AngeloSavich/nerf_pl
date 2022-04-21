@@ -89,8 +89,6 @@ class NeRFSystem(LightningModule):
         self.val_dataset = dataset(split='val', **kwargs)
 
     def configure_optimizers(self):
-        print(f'self: {self}', flush=True)
-        print(hparams, flush=True)
         self.optimizer = get_optimizer(self.hparams, self.models, self)
         scheduler = get_scheduler(self.hparams, self.optimizer)
         return [self.optimizer], [scheduler]
@@ -159,10 +157,9 @@ def set_lr(trainer, model):
     auto = model.hparams.lr is None
 
     if auto:
-        model.hparams.lr = 0.0005
+        # model.hparams.lr = 0.0005
         lr_finder = trainer.tuner.lr_find(model)  # Run learning rate finder
 
-        print("here 3")
         fig = lr_finder.plot(suggest=True)  # Plot
         fig.show()
         model.hparams.lr = lr_finder.suggestion()

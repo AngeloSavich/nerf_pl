@@ -25,9 +25,6 @@ def get_parameters(models):
 def get_optimizer(hparams, models, system):
     eps = 1e-8
     parameters = get_parameters(models)
-    print(system, flush=True)
-    print()
-    print(f'hparams: \n {hparams}')
     if hparams.optimizer == 'sgd':
         optimizer = SGD(parameters, lr=hparams.lr,
                         momentum=hparams.momentum, weight_decay=hparams.weight_decay)
