@@ -178,7 +178,6 @@ def set_lr(trainer, model):
 
 # TODO: Make it save checkpoints in the data repo
 def main(hparams):
-    hparams.lr = 0.0005
     # TODO - Move checkpoint generation to it's own file / place / namespace
     cb_ckpt_top = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/top5/',
                                   filename='top5-{epoch:0>3d}-{step:d}',
