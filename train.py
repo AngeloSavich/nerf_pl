@@ -160,7 +160,8 @@ def main(hparams):
                                   every_n_epochs=1,
                                   save_top_k=6,
                                   monitor='val/psnr',
-                                  mode='max')
+                                  mode='max',
+                                  save_on_train_epoch_end=True)
 
     cb_every_epoch = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/all_epochs',
                                      filename='all-{epoch:0>3d}-{step:d}',
@@ -169,38 +170,42 @@ def main(hparams):
                                      save_on_train_epoch_end=False)
 
     cb_every_epoch_end = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/all_epochs',
-                                     filename='all-{epoch:0>3d}-{step:d}-end',
-                                     every_n_epochs=1,
-                                     save_top_k=-1,
-                                     save_on_train_epoch_end=True)
+                                         filename='all-{epoch:0>3d}-{step:d}-end',
+                                         every_n_epochs=1,
+                                         save_top_k=-1,
+                                         save_on_train_epoch_end=True)
 
     # cb_ckpt_min_loss_train = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
     #                                          filename='top_min_loss_train-{epoch:d}-{step:d}',
     #                                          every_n_epochs=1,
     #                                          save_top_k=1,
     #                                          monitor='train/loss',
-    #                                          mode='min')
+    #                                          mode='min',
+    #                                          save_on_train_epoch_end = True)
 
     cb_ckpt_min_loss_mean = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
                                             filename='top_min_loss_mean-{epoch:d}-{step:d}',
                                             every_n_epochs=1,
                                             save_top_k=1,
                                             monitor='val/loss',
-                                            mode='min')
+                                            mode='min',
+                                            save_on_train_epoch_end=True)
 
     # cb_ckpt_max_psnr_train = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
     #                                          filename='top_max_psnr_train-{epoch:d}-{step:d}',
     #                                          every_n_epochs=1,
     #                                          save_top_k=1,
     #                                          monitor='train/psnr',
-    #                                          mode='max')
+    #                                          mode='max',
+    #                                          save_on_train_epoch_end = True)
 
     cb_ckpt_max_psnr_mean = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
                                             filename='top_max_psnr_mean-{epoch:d}',
                                             every_n_epochs=1,
                                             save_top_k=1,
                                             monitor='val/psnr',
-                                            mode='max')
+                                            mode='max',
+                                            save_on_train_epoch_end=True)
 
     pbar = TQDMProgressBar(refresh_rate=1)
     callbacks = [cb_ckpt_top, cb_every_epoch, cb_every_epoch_end,
