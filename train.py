@@ -207,8 +207,13 @@ def main(hparams):
                                             mode='max',
                                             save_on_train_epoch_end=True)
 
+    cb_ckpt_latest = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/',
+                                     filename='last-{epoch:d}',
+                                     save_last=True)
+
     pbar = TQDMProgressBar(refresh_rate=1)
-    callbacks = [cb_ckpt_top, cb_every_epoch, cb_every_epoch_end,
+    callbacks = [cb_ckpt_top, cb_ckpt_latest,
+                 cb_every_epoch, cb_every_epoch_end,
                  cb_ckpt_min_loss_mean, cb_ckpt_max_psnr_mean,
                  # cb_ckpt_min_loss_train, cb_ckpt_max_psnr_train,
                  pbar]
