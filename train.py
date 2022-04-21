@@ -26,7 +26,7 @@ from metrics import *
 
 # pytorch-lightning
 from pytorch_lightning import LightningModule, Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar
+from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar, LearningRateMonitor
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.plugins import DDPPlugin
 
@@ -237,11 +237,14 @@ def main(hparams):
 
     pbar = TQDMProgressBar(refresh_rate=1)
 
+    lr_bar = LearningRateMonitor(logging_interval='step',
+                                 log_momentum=True)
+
     callbacks = [cb_ckpt_top, cb_ckpt_latest,
                  cb_every_epoch, cb_every_epoch_end,
                  cb_ckpt_min_loss_mean, cb_ckpt_max_psnr_mean,
                  # cb_ckpt_min_loss_train, cb_ckpt_max_psnr_train,
-                 pbar]
+                 pbar, lr_bar]
 
     #################################################
     system = NeRFSystem(hparams)
