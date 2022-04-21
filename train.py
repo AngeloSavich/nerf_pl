@@ -89,7 +89,9 @@ class NeRFSystem(LightningModule):
         self.val_dataset = dataset(split='val', **kwargs)
 
     def configure_optimizers(self):
-        self.optimizer = get_optimizer(self.hparams, self.models)
+        print(f'self: {self}', flush=True)
+        print(hparams, flush=True)
+        self.optimizer = get_optimizer(self.hparams, self.models, self)
         scheduler = get_scheduler(self.hparams, self.optimizer)
         return [self.optimizer], [scheduler]
 
@@ -152,9 +154,30 @@ class NeRFSystem(LightningModule):
         self.log('val/psnr', mean_psnr, prog_bar=True)
 
 
+def set_lr(trainer, model):
+    # Determine if to use auto or manually set lr
+    auto = model.hparams.lr is None
+
+    if auto:
+        model.hparams.lr = 0.0005
+        lr_finder = trainer.tuner.lr_find(model)  # Run learning rate finder
+
+        print("here 3")
+        fig = lr_finder.plot(suggest=True)  # Plot
+        fig.show()
+        model.hparams.lr = lr_finder.suggestion()
+
+    print(f'''
+    Learning Rate : {model.hparams.lr},
+    Auto: '{auto}'
+    Manual: '{not auto}'
+    ''', flush=True)
+
+
 # TODO: Make it save checkpoints in the data repo
 def main(hparams):
-    system = NeRFSystem(hparams)
+    hparams.lr = 0.0005
+    # TODO - Move checkpoint generation to it's own file / place / namespace
     cb_ckpt_top = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/top5/',
                                   filename='top5-{epoch:0>3d}-{step:d}',
                                   every_n_epochs=1,
@@ -212,17 +235,23 @@ def main(hparams):
                                      save_last=True)
 
     pbar = TQDMProgressBar(refresh_rate=1)
+
     callbacks = [cb_ckpt_top, cb_ckpt_latest,
                  cb_every_epoch, cb_every_epoch_end,
                  cb_ckpt_min_loss_mean, cb_ckpt_max_psnr_mean,
                  # cb_ckpt_min_loss_train, cb_ckpt_max_psnr_train,
                  pbar]
 
+    #################################################
+    system = NeRFSystem(hparams)
+
     logger = TensorBoardLogger(save_dir="logs",
                                name=hparams.exp_name,
                                default_hp_metric=False)
 
-    trainer = Trainer(max_epochs=hparams.num_epochs,
+    trainer = Trainer(
+        auto_lr_find=True,
+    max_epochs=hparams.num_epochs,
                       callbacks=callbacks,
                       logger=logger,
                       enable_model_summary=False,
@@ -233,6 +262,10 @@ def main(hparams):
                       profiler="simple" if hparams.num_gpus == 1 else None,
                       strategy=DDPPlugin(find_unused_parameters=False) if hparams.num_gpus > 1 else None,
                       )
+
+    # # Auto Find Learning Rate: tune trainer
+    # set_lr(trainer, system)
+    trainer.tune(system)
 
     if (hparams.ckpt_path is not None):
         trainer.fit(system, ckpt_path=hparams.ckpt_path)

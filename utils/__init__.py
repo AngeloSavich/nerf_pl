@@ -1,9 +1,10 @@
 import torch
 # optimizer
+from pytorch_lightning import Trainer
 from torch.optim import SGD, Adam
 import torch_optimizer as optim
 # scheduler
-from torch.optim.lr_scheduler import CosineAnnealingLR, MultiStepLR
+from torch.optim.lr_scheduler import CosineAnnealingLR, MultiStepLR, LambdaLR
 from .warmup_scheduler import GradualWarmupScheduler
 
 from .visualization import *
@@ -21,20 +22,23 @@ def get_parameters(models):
         parameters += list(models.parameters())
     return parameters
 
-def get_optimizer(hparams, models):
+def get_optimizer(hparams, models, system):
     eps = 1e-8
     parameters = get_parameters(models)
+    print(system, flush=True)
+    print()
+    print(f'hparams: \n {hparams}')
     if hparams.optimizer == 'sgd':
-        optimizer = SGD(parameters, lr=hparams.lr, 
+        optimizer = SGD(parameters, lr=hparams.lr,
                         momentum=hparams.momentum, weight_decay=hparams.weight_decay)
     elif hparams.optimizer == 'adam':
-        optimizer = Adam(parameters, lr=hparams.lr, eps=eps, 
+        optimizer = Adam(parameters, lr=system.hparams.lr, eps=eps,
                          weight_decay=hparams.weight_decay)
     elif hparams.optimizer == 'radam':
-        optimizer = optim.RAdam(parameters, lr=hparams.lr, eps=eps, 
+        optimizer = optim.RAdam(parameters, lr=hparams.lr, eps=eps,
                                 weight_decay=hparams.weight_decay)
     elif hparams.optimizer == 'ranger':
-        optimizer = optim.Ranger(parameters, lr=hparams.lr, eps=eps, 
+        optimizer = optim.Ranger(parameters, lr=hparams.lr, eps=eps,
                                  weight_decay=hparams.weight_decay)
     else:
         raise ValueError('optimizer not recognized!')
