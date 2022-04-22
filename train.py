@@ -162,12 +162,10 @@ def set_lr(trainer, model):
     ''')
     if auto:
         # trainer.tune(model)
-
-        # model.hparams.lr = 0.0005
-        model.hparams.lr = 0.001
-        # model.hparams.lr = 0.01
+        model.hparams.lr = 0.0005
 
         lr_finder = trainer.tuner.lr_find(model, num_training=300, )  # Run learning rate finder
+        # TODO: Make batch size and lr set independently instead of just based on if lr is set
         new_batch_size = trainer.tuner.scale_batch_size(model, max_trials=50, mode='binsearch', steps_per_trial=5,
                                                         init_val=256)  # Implement scaling batch size this way
 
@@ -180,7 +178,13 @@ def set_lr(trainer, model):
 
     print(f'''
     Learning Rate : {model.hparams.lr},
-    Mode: '{"auto" if auto else "Manual"}'
+    Mode: {'auto' if auto else 'Manual'}
+    ''', flush=True)
+
+    # TODO: Make batch size and lr set independently instead of just based on if lr is set
+    print(f'''
+    Batch Size : {model.hparams.batch_size},
+    Mode: {'auto' if auto else 'Manual'}
     ''', flush=True)
 
 
