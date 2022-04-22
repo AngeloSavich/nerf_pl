@@ -182,7 +182,7 @@ def set_lr(trainer, model):
         #  size have an impact on learning rate?
         lr_finder = trainer.tuner.lr_find(
             model,
-            num_training=130,
+            num_training=30,
         )
         model.hparams.lr = lr_finder.suggestion()
 
