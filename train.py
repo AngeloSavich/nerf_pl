@@ -165,17 +165,30 @@ def set_lr(trainer, model):
         # trainer.tune(model)
         model.hparams.lr = 0.0005
 
+        # Find new and override previous batch size
         # TODO: Make batch size and lr set independently instead of just based on if lr is set
-        new_batch_size = trainer.tuner.scale_batch_size(model, max_trials=50, mode='power', steps_per_trial=5,
-                                                        init_val=256)  # Implement scaling batch size this way
-        lr_finder = trainer.tuner.lr_find(model, num_training=300, )  # Run learning rate finder
+        new_batch_size = trainer.tuner.scale_batch_size(
+            model,
+            max_trials=50,
+            mode='power',
+            steps_per_trial=5,
+            init_val=256
+        )
+        model.hparams.batch_size = new_batch_size
 
+        # Find new and override previous learning rate
+        # TODO: Does this learning rate affect the batch size determination at all and should
+        #  this be run AND set first before batch size runs for more stable results? And then vice versa, does batch
+        #  size have an impact on learning rate?
+        lr_finder = trainer.tuner.lr_find(
+            model,
+            num_training=130,
+        )
+        model.hparams.lr = lr_finder.suggestion()
+
+        # Display learning rate results graph
         fig = lr_finder.plot(suggest=True)  # Plot
         fig.show()
-
-        # Override old lr and batch size
-        model.hparams.lr = lr_finder.suggestion()
-        model.hparams.batch_size = new_batch_size
 
     print(f'''
     Learning Rate : {model.hparams.lr},
