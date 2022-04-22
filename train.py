@@ -163,7 +163,10 @@ def set_lr(trainer, model):
     if auto:
         # trainer.tune(model)
 
-        model.hparams.lr = 0.0005
+        # model.hparams.lr = 0.0005
+        # model.hparams.lr = 0.001
+        model.hparams.lr = 0.01
+
         lr_finder = trainer.tuner.lr_find(model)  # Run learning rate finder
 
         fig = lr_finder.plot(suggest=True)  # Plot
@@ -175,8 +178,9 @@ def set_lr(trainer, model):
     Mode: '{"auto" if auto else "Manual"}'
     ''', flush=True)
 
-
+# TODO: Implement Stachastic Weight Averaging?
 # TODO: Make it save checkpoints in the data repo
+# TODO: Auto batch size
 def main(hparams):
     # TODO - Move checkpoint generation to it's own file / place / namespace
     cb_ckpt_top = ModelCheckpoint(dirpath=f'ckpts/{hparams.exp_name}/top5/',
@@ -255,17 +259,17 @@ def main(hparams):
 
     trainer = Trainer(
         auto_lr_find=True,
-    max_epochs=hparams.num_epochs,
-                      callbacks=callbacks,
-                      logger=logger,
-                      enable_model_summary=False,
-                      accelerator='auto',
-                      devices=hparams.num_gpus,
-                      num_sanity_val_steps=1,
-                      benchmark=True,
-                      profiler="simple" if hparams.num_gpus == 1 else None,
-                      strategy=DDPPlugin(find_unused_parameters=False) if hparams.num_gpus > 1 else None,
-                      )
+        max_epochs=hparams.num_epochs,
+        callbacks=callbacks,
+        logger=logger,
+        enable_model_summary=False,
+        accelerator='auto',
+        devices=hparams.num_gpus,
+        num_sanity_val_steps=1,
+        benchmark=True,
+        profiler="simple" if hparams.num_gpus == 1 else None,
+        strategy=DDPPlugin(find_unused_parameters=False) if hparams.num_gpus > 1 else None,
+    )
 
     # Auto Find Learning Rate: tune trainer
     set_lr(trainer, system)
