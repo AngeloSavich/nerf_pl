@@ -158,7 +158,7 @@ def set_lr(trainer, model):
     print(f'''
     
     Manual LR:          {model.hparams.lr}
-    Manual Batch_Size:  {model.batch_size} # if LR is none, this value is overridden
+    Manual Batch_Size:  {model.hparams.batch_size} # if LR is none, this value is overridden
     
     ''')
     if auto:
