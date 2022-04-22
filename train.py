@@ -26,7 +26,7 @@ from metrics import *
 
 # pytorch-lightning
 from pytorch_lightning import LightningModule, Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar, LearningRateMonitor
+from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar, LearningRateMonitor, StochasticWeightAveraging
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.plugins import DDPPlugin
 
@@ -168,7 +168,8 @@ def set_lr(trainer, model):
         # model.hparams.lr = 0.01
 
         lr_finder = trainer.tuner.lr_find(model, num_training=300, )  # Run learning rate finder
-        new_batch_size = trainer.tuner.scale_batch_size(model, max_trials=50, mode='binsearch', steps_per_trial=5, init_val=256) # Implement scaling batch size this way
+        new_batch_size = trainer.tuner.scale_batch_size(model, max_trials=50, mode='binsearch', steps_per_trial=5,
+                                                        init_val=256)  # Implement scaling batch size this way
 
         fig = lr_finder.plot(suggest=True)  # Plot
         fig.show()
@@ -249,11 +250,14 @@ def main(hparams):
     lr_bar = LearningRateMonitor(logging_interval='step',
                                  log_momentum=True)
 
-    callbacks = [cb_ckpt_top, cb_ckpt_latest,
-                 cb_every_epoch, cb_every_epoch_end,
-                 cb_ckpt_min_loss_mean, cb_ckpt_max_psnr_mean,
-                 # cb_ckpt_min_loss_train, cb_ckpt_max_psnr_train,
-                 pbar, lr_bar]
+    callbacks = [
+        StochasticWeightAveraging(swa_lrs=1e-2),
+        cb_ckpt_top, cb_ckpt_latest,
+        cb_every_epoch, cb_every_epoch_end,
+        cb_ckpt_min_loss_mean, cb_ckpt_max_psnr_mean,
+        # cb_ckpt_min_loss_train, cb_ckpt_max_psnr_train,
+        pbar, lr_bar,
+    ]
 
     #################################################
     system = NeRFSystem(hparams)
