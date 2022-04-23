@@ -269,7 +269,7 @@ def main(hparams):
                                  log_momentum=True)
 
     callbacks = [
-        StochasticWeightAveraging(swa_lrs=1e-2),
+        # StochasticWeightAveraging(swa_lrs=1e-2),
         cb_ckpt_top, cb_ckpt_latest,
         cb_every_epoch, cb_every_epoch_end,
         cb_ckpt_min_loss_mean, cb_ckpt_max_psnr_mean,
