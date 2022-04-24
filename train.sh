@@ -20,7 +20,7 @@ fi
 
 python train.py \
 	$ID_55_RESUME_CKPT \
- 	--spheric_poses --use_disp \
+ 	--spheric --use_disp \
 	--dataset_name llff \
  	--root_dir "../../data/$1" \
  	--exp_name $1 \
