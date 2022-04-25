@@ -153,17 +153,17 @@ class NeRFSystem(LightningModule):
 
 
 def set_lr(trainer, model):
-    # Determine if to use auto or manually set lr
-    auto = model.hparams.lr is None
+    # Determine configuration
+    auto_lr = model.hparams.lr is None
+    auto_batch_size = model.hparams.batch_size is None
     print(f'''
     
     Manual LR:          {model.hparams.lr}
     Manual Batch_Size:  {model.hparams.batch_size}  # if LR is none, this value is overridden
     
     ''')
-    if auto:
-        # trainer.tune(model)
-        model.hparams.lr = 0.0005
+
+    if auto_batch_size:  # Batch Size
 
         # Find new and override previous batch size
         # TODO: Make batch size and lr set independently instead of just based on if lr is set
@@ -176,29 +176,34 @@ def set_lr(trainer, model):
         )
         model.hparams.batch_size = new_batch_size
 
+    if auto_lr:  # Learning Rate
+        # trainer.tune(model)
+        model.hparams.lr = 0.0005
+
         # Find new and override previous learning rate
         # TODO: Does this learning rate affect the batch size determination at all and should
         #  this be run AND set first before batch size runs for more stable results? And then vice versa, does batch
         #  size have an impact on learning rate?
         lr_finder = trainer.tuner.lr_find(
             model,
-            num_training=30,
+            num_training=model.hparams.lr_num_tests,
         )
         model.hparams.lr = lr_finder.suggestion()
 
         # Display learning rate results graph
         fig = lr_finder.plot(suggest=True)  # Plot
         fig.show()
+        fig.savefig('auto_lr_estimation_graph.png')
 
     print(f'''
     Learning Rate : {model.hparams.lr},
-    Mode: {'auto' if auto else 'Manual'}
+    Mode: {'auto' if auto_lr else 'Manual'}
     ''', flush=True)
 
     # TODO: Make batch size and lr set independently instead of just based on if lr is set
     print(f'''
     Batch Size : {model.hparams.batch_size},
-    Mode: {'auto' if auto else 'Manual'}
+    Mode: {'auto' if auto_batch_size else 'Manual'}
     ''', flush=True)
 
 

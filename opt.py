@@ -50,7 +50,7 @@ def get_opts():
                         help='optimizer type',
                         choices=['sgd', 'adam', 'radam', 'ranger'])
     parser.add_argument('--lr', type=float, default=None,
-                        help='learning rate')
+                        help='learning rate (Overrides --lr_num_tests option)')
     parser.add_argument('--momentum', type=float, default=0.9,
                         help='learning rate momentum')
     parser.add_argument('--weight_decay', type=float, default=0,
@@ -60,7 +60,7 @@ def get_opts():
                         choices=['steplr', 'cosine', 'poly'])
     parser.add_argument('--lr_num_tests', type=int, default=500,
                         help='auto learning rate - number of steps to test for optimal'
-                             ' learning rate (terminates at divergence')
+                             ' learning rate (terminates at divergence.')
     #### params for warmup, only applied when optimizer == 'sgd' or 'adam'
     parser.add_argument('--warmup_multiplier', type=float, default=1.0,
                         help='lr is multiplied by this factor after --warmup_epochs')
