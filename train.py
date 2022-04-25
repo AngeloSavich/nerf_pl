@@ -197,13 +197,13 @@ def set_lr(trainer, model):
 
     print(f'''
     Learning Rate : {model.hparams.lr},
-    Mode: {'auto' if auto_lr else 'Manual'}
+    Mode: {'auto' if auto_lr else 'manual'}
     ''', flush=True)
 
     # TODO: Make batch size and lr set independently instead of just based on if lr is set
     print(f'''
     Batch Size : {model.hparams.batch_size},
-    Mode: {'auto' if auto_batch_size else 'Manual'}
+    Mode: {'auto' if auto_batch_size else 'manual'}
     ''', flush=True)
 
 
@@ -289,6 +289,10 @@ def main(hparams):
                                name=hparams.exp_name,
                                default_hp_metric=False)
 
+    trainer_params = {}
+    if hparams.mixed_precision is not None:
+        trainer_params['precision'] = 16
+
     trainer = Trainer(
         # auto_lr_find=True,  # TODO: Does this param still need to be active? Also... move it lower to the bottom.
         # auto_scale_batch_size='binsearch',
@@ -302,17 +306,24 @@ def main(hparams):
         benchmark=True,
         profiler='simple' if hparams.num_gpus == 1 else None,
         strategy=DDPPlugin(find_unused_parameters=False) if hparams.num_gpus > 1 else None,
+        **trainer_params
     )
 
     # Auto Find Learning Rate: tune trainer
     set_lr(trainer, system)
+
     # trainer.tune(
     #     system
     # )  # Tunes for batch size, but may also retune for lr # TODO: Check if you want to move this before set_lr
-    if (hparams.ckpt_path is not None):
-        trainer.fit(system, ckpt_path=hparams.ckpt_path)
-    else:
-        trainer.fit(system)
+
+    fit_params = {}
+    if hparams.ckpt_path is not None:
+        fit_params['ckpt_path'] = hparams.ckpt_path
+
+    if hparams.mixed_precision is not None:
+        fit_params['']
+
+    trainer.fit(system, **fit_params)
 
 
 if __name__ == '__main__':

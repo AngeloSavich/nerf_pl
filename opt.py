@@ -49,6 +49,8 @@ def get_opts():
     parser.add_argument('--optimizer', type=str, default='adam',
                         help='optimizer type',
                         choices=['sgd', 'adam', 'radam', 'ranger'])
+    parser.add_argument('--mixed_precision', default=False, action="store_true",
+                        help='whether to use floating point mixed precision (16)')
     parser.add_argument('--lr', type=float, default=None,
                         help='learning rate (Overrides --lr_num_tests option)')
     parser.add_argument('--momentum', type=float, default=0.9,
