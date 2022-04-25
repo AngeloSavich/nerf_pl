@@ -26,7 +26,8 @@ from metrics import *
 
 # pytorch-lightning
 from pytorch_lightning import LightningModule, Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar, LearningRateMonitor, StochasticWeightAveraging
+from pytorch_lightning.callbacks import ModelCheckpoint, TQDMProgressBar, LearningRateMonitor, \
+    StochasticWeightAveraging, EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.plugins import DDPPlugin
 
@@ -270,6 +271,10 @@ def main(hparams):
                                      filename='last-{epoch:d}',
                                      save_last=True)
 
+
+    cb_early_stop_loss = EarlyStopping(check_finite=True, monitor='train/loss')
+    cb_early_stop_psnr = EarlyStopping(check_finite=True, monitor='train/psnr')
+
     pbar = TQDMProgressBar(refresh_rate=1)
 
     lr_bar = LearningRateMonitor(logging_interval='step',
@@ -281,6 +286,7 @@ def main(hparams):
         cb_every_epoch, cb_every_epoch_end,
         cb_ckpt_min_loss_mean, cb_ckpt_max_psnr_mean,
         # cb_ckpt_min_loss_train, cb_ckpt_max_psnr_train,
+        cb_early_stop_loss, cb_early_stop_psnr,
         pbar, lr_bar,
     ]
 
