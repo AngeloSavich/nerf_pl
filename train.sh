@@ -20,14 +20,14 @@ fi
 
 python train.py \
 	$ID_55_RESUME_CKPT \
- 	--spheric --use_disp \
 	--dataset_name llff \
+ 	--spheric_poses --use_disp \
+ 	--optimizer adam \
+ 	--lr_scheduler steplr --decay_step 10 20 --decay_gamma 0.5 \
  	--root_dir "../../data/$1" \
  	--exp_name $1 \
  	--N_importance 64 --img_wh $2 $3  \
- 	--num_epochs $4 --batch_size 1024 \
- 	--optimizer adam \
- 	--lr_scheduler steplr --decay_step 10 20 --decay_gamma 0.5 \
+ 	--num_epochs $4 --batch_size 2048 \
 
 
 # python train.py \
