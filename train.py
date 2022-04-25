@@ -320,9 +320,6 @@ def main(hparams):
     if hparams.ckpt_path is not None:
         fit_params['ckpt_path'] = hparams.ckpt_path
 
-    if hparams.mixed_precision is not None:
-        fit_params['']
-
     trainer.fit(system, **fit_params)
 
 
