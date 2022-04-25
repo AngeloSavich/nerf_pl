@@ -29,8 +29,9 @@ def get_opts():
     parser.add_argument('--noise_std', type=float, default=1.0,
                         help='std dev of noise added to regularize sigma')
         
-    parser.add_argument('--batch_size', type=int, default=1024,
+    parser.add_argument('--batch_size', type=int, default=None,
                         help='batch size')
+
     parser.add_argument('--chunk', type=int, default=32*1024,
                         help='chunk size to split the input to avoid OOM')
     parser.add_argument('--num_epochs', type=int, default=16,
@@ -57,6 +58,9 @@ def get_opts():
     parser.add_argument('--lr_scheduler', type=str, default='steplr',
                         help='scheduler type',
                         choices=['steplr', 'cosine', 'poly'])
+    parser.add_argument('--lr_num_tests', type=int, default=500,
+                        help='auto learning rate - number of steps to test for optimal'
+                             ' learning rate (terminates at divergence')
     #### params for warmup, only applied when optimizer == 'sgd' or 'adam'
     parser.add_argument('--warmup_multiplier', type=float, default=1.0,
                         help='lr is multiplied by this factor after --warmup_epochs')
