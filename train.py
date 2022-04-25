@@ -289,13 +289,14 @@ def main(hparams):
                                name=hparams.exp_name,
                                default_hp_metric=False)
 
-    trainer_params = {}
-    if hparams.mixed_precision is not None:
-        trainer_params['precision'] = 16
+    # trainer_params = {}
+    # if hparams.mixed_precision is not None:
+    #     trainer_params['precision'] = 16
 
     trainer = Trainer(
         # auto_lr_find=True,  # TODO: Does this param still need to be active? Also... move it lower to the bottom.
         # auto_scale_batch_size='binsearch',
+        precision=16,
         max_epochs=hparams.num_epochs,
         callbacks=callbacks,
         logger=logger,
@@ -306,7 +307,7 @@ def main(hparams):
         benchmark=True,
         profiler='simple' if hparams.num_gpus == 1 else None,
         strategy=DDPPlugin(find_unused_parameters=False) if hparams.num_gpus > 1 else None,
-        **trainer_params
+        # **trainer_params
     )
 
     # Auto Find Learning Rate: tune trainer
