@@ -187,6 +187,8 @@ def set_lr(trainer, model):
         lr_finder = trainer.tuner.lr_find(
             model,
             num_training=model.hparams.lr_num_tests,
+            min_lr=1e-8,
+            max_lr=1,
         )
         model.hparams.lr = lr_finder.suggestion()
 

@@ -60,7 +60,7 @@ def get_opts():
     parser.add_argument('--lr_scheduler', type=str, default='steplr',
                         help='scheduler type',
                         choices=['steplr', 'cosine', 'poly'])
-    parser.add_argument('--lr_num_tests', type=int, default=500,
+    parser.add_argument('--lr_num_tests', type=int, default=100,
                         help='auto learning rate - number of steps to test for optimal'
                              ' learning rate (terminates at divergence.')
     #### params for warmup, only applied when optimizer == 'sgd' or 'adam'
